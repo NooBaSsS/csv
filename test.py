@@ -1,115 +1,75 @@
-import pygame
-import sys
+import csv
 
-pygame.init()
+base = {'id': 0,
+        'name': 1,
+        'surname': 2,
+        'age': 3,
+        'height': 4,
+        'weight': 5,
+        'eyesight': 6,
+        'education': 7,
+        'english_language': 8,
+        }
+FILE = r'C:\Users\username\Desktop\csv-olimp\Архив\ita.csv'
+candidates = []
+sort_idx = []
+raw_data = []
+sorted_data = []
+approved = []
 
-WIDTH, HEIGHT = 300, 300
-LINE_WIDTH = 15
-BOARD_ROWS, BOARD_COLS = 3, 3
-SQUARE_SIZE = WIDTH // BOARD_COLS
-CIRCLE_RADIUS = SQUARE_SIZE // 3
-CROSS_WIDTH = 25
-SPACE = SQUARE_SIZE // 4
-RED = (255, 0, 0)
-BG_COLOR = (28, 170, 156)
-LINE_COLOR = (23, 145, 135)
-CIRCLE_COLOR = (239, 231, 200)
-CROSS_COLOR = (66, 66, 66)
 
-# Создание экрана
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Крестики-нолики")
-screen.fill(BG_COLOR)
+def get_number_of_rows():
+    '''возвращает количество строк в файле csv'''
+    with open(FILE) as file:
+        return len(list(csv.reader(file)))
 
-# Создание игровой доски
-board = [['' for _ in range(BOARD_COLS)] for _ in range(BOARD_ROWS)]
 
-# Рисование сетки
-def draw_grid():
-    for i in range(1, BOARD_ROWS):
-        pygame.draw.line(screen, LINE_COLOR, (0, i * SQUARE_SIZE), (WIDTH, i * SQUARE_SIZE), LINE_WIDTH)
-        pygame.draw.line(screen, LINE_COLOR, (i * SQUARE_SIZE, 0), (i * SQUARE_SIZE, HEIGHT), LINE_WIDTH)
+def get_raw_data():
+    '''
+    в переменную raw_data записывает каждую строку файла csv в виде списка
+    '''
+    with open(FILE) as file:
+        for i in range(get_number_of_rows()):
+            reader = csv.reader(file, delimiter='#')
+            raw_data.append(next(reader))
+    raw_data.pop(0)
 
-# Рисование фигур на доске
-def draw_figures():
-    for row in range(BOARD_ROWS):
-        for col in range(BOARD_COLS):
-            if board[row][col] == 'X':
-                pygame.draw.line(screen, CROSS_COLOR, (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE),
-                                 (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SPACE), CROSS_WIDTH)
-                pygame.draw.line(screen, CROSS_COLOR, (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SPACE),
-                                 (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE), CROSS_WIDTH)
-            elif board[row][col] == 'O':
-                pygame.draw.circle(screen, CIRCLE_COLOR, (col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2), CIRCLE_RADIUS, 2)
 
-# Проверка победителя
-def check_winner():
-    # Проверка строк
-    for row in range(BOARD_ROWS):
-        if board[row][0] == board[row][1] == board[row][2] != '':
-            return board[row][0]
+def get_sort():
+    '''
+    в переменную sort_idx записывает правильный порядок индексов
+    '''
+    with open(FILE) as file:
+        reader = csv.reader(file, delimiter='#')
+        next_row = next(reader)
 
-    # Проверка столбцов
-    for col in range(BOARD_COLS):
-        if board[0][col] == board[1][col] == board[2][col] != '':
-            return board[0][col]
+        right_row_idx = []
+        for a in next_row:
+            right_row_idx.append(base[a])
+        # print(right_row_idx)
+        global sort_idx
+        sort_idx = right_row_idx
 
-    # Проверка диагоналей
-    if board[0][0] == board[1][1] == board[2][2] != '':
-        return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] != '':
-        return board[0][2]
 
-    return None
+def sort_data():
+    '''
+    сортирует каждый элемент raw_data в по порядку индексов,
+    записанных в sort_idx
+    '''
 
-# Отрисовка доски
-def draw_board():
-    draw_grid()
-    draw_figures()
+    for candidate in raw_data:
+        temp_element = {}
+        temp_dict = {}
+        for i in range(0, 9):
+            temp_dict[candidate[i]] = sort_idx[i]
+        for element, idx in temp_dict.items():
+            temp_element[idx] = element
+        sorted_data.append(temp_element)
 
-# Очистка доски и экрана
-def reset_game():
-    screen.fill(BG_COLOR)
-    draw_board()
-    pygame.display.update()
-    for row in range(BOARD_ROWS):
-        for col in range(BOARD_COLS):
-            board[row][col] = ''
 
-# Основной игровой цикл
-def main():
-    draw_board()
-    running = True
-    currentPlayer = 'X'
-    game_over = False
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
-                mouseX = event.pos[0]
-                mouseY = event.pos[1]
+get_sort()
+get_raw_data()
+sort_data()
 
-                clicked_row = mouseY // SQUARE_SIZE
-                clicked_col = mouseX // SQUARE_SIZE
-
-                if board[clicked_row][clicked_col] == '':
-                    board[clicked_row][clicked_col] = currentPlayer
-                    if currentPlayer == 'X':
-                        currentPlayer = 'O'
-                    else:
-                        currentPlayer = 'X'
-                    draw_board()
-                    winner = check_winner()
-                    if winner:
-                        game_over = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    reset_game()
-
-        pygame.display.update()
-
-if __name__ == "__main__":
-    main()
+print(sort_idx)
+print(sorted_data, 'сортированные')
