@@ -91,11 +91,10 @@ def qualify():
     '''
     for candidate in sorted_data:
         if 20 <= int(candidate[3]) or int(candidate[3]) >= 59:
-            if 150 <= int(candidate[4]) or int(candidate[4]) >= 190:
+            if 150 <= int(candidate[4]) and int(candidate[4]) <= 190:
                 if float(candidate[6]) == 1.0:
                     if candidate[7] == 'Master' or candidate[7] == 'PhD':
                         if candidate[8] == 'true':
-                            global approved
                             approved.append(candidate)
 
 
@@ -105,10 +104,15 @@ def sort_approved():
     приоритет от 27 до 37 лет
     далее по алфавиту имя+фамилия
     '''
-    for i in range(len(approved)):
-        for candidate in approved:
-            if int(candidate[3]) < 27 or int(candidate[3]) > 37:
-                approved.insert(-1, candidate)
+    candidates_in_age = []
+    candidates_out_age = []
+    for candidate in approved:
+        if int(candidate[3]) >= 27 and int(candidate[3]) <= 37:
+            candidates_in_age.append(candidate)
+        else:
+            candidates_out_age.append(candidate)
+    candidates_in_age = sorted(candidates_in_age, key=lambda d: (d[1], d[2]))
+    candidates_out_age = sorted(candidates_out_age, key=lambda d: (d[1], d[2]))
 
 
 for path in FILES:
@@ -116,8 +120,4 @@ for path in FILES:
 qualify()
 print(approved)
 print(len(approved))
-# print(sort_idx)
-# print(sorted_data, 'сортированные')
-# print(approved, 'прошедшие')
-# sort_approved()
-# print(approved, 'прошедшие + сортировка')
+sort_approved()
