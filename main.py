@@ -11,10 +11,10 @@ base = {'id': 0,
         'english_language': 8,
         }
 FILES = [
-    r'C:\Users\DDT\Desktop\Архив\ger.csv',
-    r'C:\Users\DDT\Desktop\Архив\ita.csv',
-    r'C:\Users\DDT\Desktop\Архив\rus.csv',
-    r'C:\Users\DDT\Desktop\Архив\us.csv',
+    r'C:\Users\username\Desktop\csv\Архив\ger.csv',
+    r'C:\Users\username\Desktop\csv\Архив\ita.csv',
+    r'C:\Users\username\Desktop\csv\Архив\rus.csv',
+    r'C:\Users\username\Desktop\csv\Архив\us.csv',
     ]
 candidates = []
 sort_idx = []
@@ -103,7 +103,9 @@ def sort_approved():
     сортрует допущенных в соответствии с правилами
     приоритет от 27 до 37 лет
     далее по алфавиту имя+фамилия
+    после сортировки изменяет их id по порядку
     '''
+    global approved
     candidates_in_age = []
     candidates_out_age = []
     for candidate in approved:
@@ -113,11 +115,26 @@ def sort_approved():
             candidates_out_age.append(candidate)
     candidates_in_age = sorted(candidates_in_age, key=lambda d: (d[1], d[2]))
     candidates_out_age = sorted(candidates_out_age, key=lambda d: (d[1], d[2]))
+    approved = candidates_in_age + candidates_out_age
+    for idx, candidate in enumerate(approved, 1):
+        candidate[0] = idx
+
+
+def write_to_file():
+    with open('result.csv', 'w+', newline='') as file:
+        writer = csv.writer(file, delimiter='#')
+        for element in approved:
+            writer.writerow([element[0],
+                             element[1],
+                             element[2],
+                             element[4],
+                             element[5],
+                             element[7],
+                             ])
 
 
 for path in FILES:
     get_raw_data(path)
 qualify()
-print(approved)
-print(len(approved))
 sort_approved()
+write_to_file()
